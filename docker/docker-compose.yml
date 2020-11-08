@@ -1,0 +1,60 @@
+version: '3'
+
+volumes:
+  db-volume:
+  symfony-api-vendor:
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: "${MYSQL_DATABASE:-db}"
+      MYSQL_USER: "${MYSQL_USER:-user}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:-password}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-password}"
+      TZ: "${SYSTEM_TZ:-America/New_York}"
+    ports:
+      - 3306:3306
+    volumes:
+      - db-volume:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db
+    environment:
+      MYSQL_USER: "${MYSQL_USER:-user}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:-password}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-password}"
+      TZ: "${SYSTEM_TZ:-America/New_York}"
+    ports:
+      - 8080:80
+
+  baseimg:
+    build:
+      context: .
+      dockerfile: images/base/Dockerfile
+      args:
+        SYSTEM_TZ: "${SYSTEM_TZ:-America/New_York}"
+    image: baseimg
+
+  symfony-api:
+    build:
+      context: ../symfony-api
+      dockerfile: Dockerfile
+    env_file:
+      - ../symfony-api/.env
+    environment:
+      DATABASE_URL: "mysql://${MYSQL_USER:-user}:${MYSQL_PASSWORD:-password}@db:3306/${MYSQL_DATABASE:-db}?serverVersion=5.7"
+    depends_on:
+      - db
+    ports:
+      - "${SYMFONY_API_PORT:-80}:80"
+    volumes:
+      - "${ROOT_PATH:-..}/symfony-api:/var/www/html"
+      - "symfony-api-vendor:/var/www/html/vendor"
+    labels:
+      - "traefik.port=80"
+      - "traefik.backend=symfony-api"
+      - "traefik.frontend.rule=HostRegexp:{host:symfony-api.docker.localhost}"
