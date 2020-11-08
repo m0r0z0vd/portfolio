@@ -3,6 +3,7 @@ version: '3'
 volumes:
   db-volume:
   symfony-api-vendor:
+  vue-node:
 
 services:
   db:
@@ -54,7 +55,18 @@ services:
     volumes:
       - "${ROOT_PATH:-..}/symfony-api:/var/www/html"
       - "symfony-api-vendor:/var/www/html/vendor"
-    labels:
-      - "traefik.port=80"
-      - "traefik.backend=symfony-api"
-      - "traefik.frontend.rule=HostRegexp:{host:symfony-api.docker.localhost}"
+
+  vue:
+    build:
+      context: ../vue
+      dockerfile: Dockerfile
+    hostname: vue
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - symfony-api
+    ports:
+      - "${VUE_PORT:-8081}:8080"
+    volumes:
+      - "${ROOT_PATH:-..}/vue:/usr/src/app"
+      - "vue-node:/usr/src/app/node_modules"

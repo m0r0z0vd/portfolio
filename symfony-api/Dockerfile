@@ -28,11 +28,10 @@ CustomLog "/dev/stdout" common\n\
 RUN a2enmod rewrite
 
 RUN /bin/echo -e "#!/bin/bash\n\
-chown -R www-data var\n\
+chown -R www-data /var\n\
 chmod -R 0777 /var/www/html/var/cache\n\
 chmod -R 0777 /var/www/html/var/log\n\
 exec apachectl -D FOREGROUND\n\
-" > /usr/sbin/docker-entrypoint.sh \
-    && chmod +x /usr/sbin/docker-entrypoint.sh
+" > /usr/sbin/docker-entrypoint.sh && chmod +x /usr/sbin/docker-entrypoint.sh
 
 CMD /usr/sbin/docker-entrypoint.sh
