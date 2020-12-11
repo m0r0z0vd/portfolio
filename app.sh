@@ -11,4 +11,6 @@ echo "Waiting for DB connection..."
 sleep 10
 echo "Done."
 docker-compose exec symfony-api php bin/console doctrine:migrations:migrate --no-interaction
+docker-compose exec laravel-default php artisan migrate
+docker-compose exec laravel-default php artisan optimize
 cd ..

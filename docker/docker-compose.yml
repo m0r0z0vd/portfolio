@@ -4,6 +4,7 @@ volumes:
   db-volume:
   symfony-api-vendor:
   vue-node:
+#  laravel-default-vendor:
 
 services:
   db:
@@ -70,3 +71,17 @@ services:
     volumes:
       - "${ROOT_PATH:-..}/vue:/usr/src/app"
       - "vue-node:/usr/src/app/node_modules"
+
+  laravel-default:
+    build:
+      context: ../laravel-default
+      dockerfile: Dockerfile
+    env_file:
+      - ../laravel-default/.env
+    depends_on:
+      - db
+    ports:
+      - "${LARAVEL_DEFAULT_API_PORT:-8082}:80"
+    volumes:
+      - "${ROOT_PATH:-..}/laravel-default:/var/www/html"
+#      - "laravel-default-vendor:/var/www/html/vendor"
